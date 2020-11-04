@@ -1,9 +1,9 @@
 {
-  "name": "starter-kit",
+  "name": "cockpit-transactional-update",
   "version": "0.1.0",
-  "description": "Scaffolding for a cockpit module",
+  "description": "Transactional update Cockpit module",
   "main": "index.js",
-  "repository": "git@github.com:cockpit/starter-kit.git",
+  "repository": "git@github.com:lslezak/cockpit-transactional-update.git",
   "author": "",
   "license": "LGPL-2.1",
   "scripts": {
