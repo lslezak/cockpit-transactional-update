@@ -14,7 +14,6 @@ addons:
       - qemu-kvm
       - qemu-utils
       - rpm
-      - sassc
 env:
   - TEST_OS=fedora-33
   - TEST_OS=centos-8-stream

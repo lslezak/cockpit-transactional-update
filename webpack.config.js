@@ -168,7 +168,15 @@ module.exports = {
                             ]
                         },
                     },
-                    'sassc-loader',
+                    {
+                        loader: 'sass-loader',
+                        options: {
+                            sassOptions: {
+                                outputStyle: 'compressed',
+                            },
+                            sourceMap: true,
+                        },
+                    }
                 ]
             },
             {
@@ -183,7 +191,15 @@ module.exports = {
                             url: false
                         }
                     },
-                    'sassc-loader',
+                    {
+                        loader: 'sass-loader',
+                        options: {
+                            sassOptions: {
+                                outputStyle: 'compressed',
+                            },
+                            sourceMap: true,
+                        },
+                    }
                 ]
             },
         ]
