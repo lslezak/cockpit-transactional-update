@@ -19,12 +19,9 @@
 
 import cockpit from 'cockpit';
 import React from 'react';
-import {
-    Backdrop, Bullseye, Spinner, DataList, DataListItem,
-    DataListItemRow,
-    DataListItemCells,
-    DataListCell,
-} from '@patternfly/react-core';
+import { Backdrop, Bullseye, Spinner } from '@patternfly/react-core';
+import { Table, TableHeader, TableBody } from '@patternfly/react-table';
+
 import { Patch } from './patch.jsx';
 
 const _ = cockpit.gettext;
@@ -32,7 +29,16 @@ const _ = cockpit.gettext;
 export class Application extends React.Component {
     constructor() {
         super();
-        this.state = { loading: true };
+        this.state = {
+            loading: true,
+            columns: [
+                "Name",
+                "Version",
+                "Category",
+                "Severity",
+                "Summary"
+            ]
+        };
     }
 
     componentDidMount() {
@@ -52,45 +58,24 @@ export class Application extends React.Component {
             );
         else {
             console.log("Rendering patches: ", this.state.patches);
+
+            const rows = this.state.patches.map((patch) => {
+                return {
+                    cells: [
+                        patch.name,
+                        patch.version,
+                        patch.category,
+                        patch.severity,
+                        patch.summary
+                    ]
+                };
+            });
+
             return (
-                <DataList aria-label={ _("Available Patches") }>
-                    <DataListItem aria-labelledby="header" key="patch_table_header">
-                        <DataListItemRow>
-                            <DataListItemCells
-                        dataListCells={[
-                            <DataListCell key="header name">
-                                Name
-                            </DataListCell>,
-                            <DataListCell key="header category">Category</DataListCell>,
-                            <DataListCell key="header severity">Severity</DataListCell>,
-                            <DataListCell key="header summary">Summary</DataListCell>
-                        ]}
-                            />
-                        </DataListItemRow>
-                    </DataListItem>
-                    {
-                        this.state.patches.map((patch, index) => {
-                            return (
-                                <>
-                                    <DataListItem key={index}>
-                                        <DataListItemRow>
-                                            <DataListItemCells
-                                                dataListCells={[
-                                                    <DataListCell key="patch name">
-                                                        { patch.state.name }
-                                                    </DataListCell>,
-                                                    <DataListCell key="patch category">{ patch.state.category }</DataListCell>,
-                                                    <DataListCell key="patch severity">{ patch.state.severity }</DataListCell>,
-                                                    <DataListCell key="patch summary">{ patch.state.summary }</DataListCell>
-                                                ]}
-                                            />
-                                        </DataListItemRow>
-                                    </DataListItem>
-                                </>
-                            );
-                        })
-                    }
-                </DataList>
+                <Table caption={ _("Available Updates") } cells={this.state.columns} rows={rows}>
+                    <TableHeader />
+                    <TableBody />
+                </Table>
             );
         }
     }
