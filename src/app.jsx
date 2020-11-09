@@ -19,31 +19,79 @@
 
 import cockpit from 'cockpit';
 import React from 'react';
-import { Alert, Card, CardTitle, CardBody } from '@patternfly/react-core';
+import {
+    Backdrop, Bullseye, Spinner, DataList, DataListItem,
+    DataListItemRow,
+    DataListItemCells,
+    DataListCell,
+} from '@patternfly/react-core';
+import { Patch } from './patch.jsx';
 
 const _ = cockpit.gettext;
 
 export class Application extends React.Component {
     constructor() {
         super();
-        this.state = { hostname: _("Unknown") };
+        this.state = { loading: true };
+    }
 
-        cockpit.file('/etc/hostname').watch(content => {
-            this.setState({ hostname: content.trim() });
-        });
+    componentDidMount() {
+        Patch.patches().then((patches) =>
+            this.setState({ patches: patches, loading: false })
+        );
     }
 
     render() {
-        return (
-            <Card>
-                <CardTitle>Transactional Update</CardTitle>
-                <CardBody>
-                    <Alert
-                        variant="info"
-                        title={ cockpit.format(_("Running on $0"), this.state.hostname) }
-                    />
-                </CardBody>
-            </Card>
-        );
+        if (this.state.loading)
+            return (
+                <Backdrop>
+                    <Bullseye>
+                        <Spinner />
+                    </Bullseye>
+                </Backdrop>
+            );
+        else {
+            console.log("Rendering patches: ", this.state.patches);
+            return (
+                <DataList aria-label={ _("Available Patches") }>
+                    <DataListItem aria-labelledby="header" key="patch_table_header">
+                        <DataListItemRow>
+                            <DataListItemCells
+                        dataListCells={[
+                            <DataListCell key="header name">
+                                Name
+                            </DataListCell>,
+                            <DataListCell key="header category">Category</DataListCell>,
+                            <DataListCell key="header severity">Severity</DataListCell>,
+                            <DataListCell key="header summary">Summary</DataListCell>
+                        ]}
+                            />
+                        </DataListItemRow>
+                    </DataListItem>
+                    {
+                        this.state.patches.map((patch, index) => {
+                            return (
+                                <>
+                                    <DataListItem key={index}>
+                                        <DataListItemRow>
+                                            <DataListItemCells
+                                                dataListCells={[
+                                                    <DataListCell key="patch name">
+                                                        { patch.state.name }
+                                                    </DataListCell>,
+                                                    <DataListCell key="patch category">{ patch.state.category }</DataListCell>,
+                                                    <DataListCell key="patch severity">{ patch.state.severity }</DataListCell>,
+                                                    <DataListCell key="patch summary">{ patch.state.summary }</DataListCell>
+                                                ]}
+                                            />
+                                        </DataListItemRow>
+                                    </DataListItem>
+                                </>
+                            );
+                        })
+                    }
+                </DataList>
+            );
+        }
     }
 }
