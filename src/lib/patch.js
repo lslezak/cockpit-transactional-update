@@ -30,21 +30,16 @@ export class Patch {
 
         const updates = xmlDoc.getElementsByTagName("update");
 
-        const patches = [];
-        for (let i = 0; i < updates.length; i++) {
-            const update = updates[i];
-
-            patches.push(new Patch(
+        return Array.from(updates).map((update) => {
+            return new Patch(
                 update.getAttribute("name"),
                 update.getAttribute("edition"),
                 update.getAttribute("category"),
                 update.getAttribute("severity"),
                 update.getElementsByTagName("summary")[0].textContent,
                 update.getElementsByTagName("description")[0].textContent
-            ));
-        }
-
-        return patches;
+            );
+        });
     }
 
     constructor(name, version, category, severity, summary, description) {
