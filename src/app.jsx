@@ -22,7 +22,7 @@ import React from 'react';
 import { Backdrop, Bullseye, Spinner } from '@patternfly/react-core';
 import { Table, TableHeader, TableBody } from '@patternfly/react-table';
 
-import { Patch } from './patch.jsx';
+import { Patch } from './lib/patch';
 
 const _ = cockpit.gettext;
 
