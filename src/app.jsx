@@ -17,26 +17,15 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
-import cockpit from 'cockpit';
 import React, { useState, useEffect } from 'react';
-import { Backdrop, Bullseye, Spinner } from '@patternfly/react-core';
-import { Table, TableHeader, TableBody } from '@patternfly/react-table';
 
 import { Patch } from './lib/patch';
-
-const _ = cockpit.gettext;
+import { Loading } from './components/Loading';
+import { PatchesList } from './components/PatchesList';
 
 export function Application() {
     const [loading, setLoading] = useState(true);
     const [patches, setPatches] = useState([]);
-
-    const columns = [
-        "Name",
-        "Version",
-        "Category",
-        "Severity",
-        "Summary"
-    ];
 
     useEffect(() => {
         Patch.patches().then((patches) => {
@@ -46,33 +35,10 @@ export function Application() {
     }, []);
 
     if (loading) {
-        return (
-            <Backdrop>
-                <Bullseye>
-                    <Spinner />
-                </Bullseye>
-            </Backdrop>
-        );
-    } else {
-        console.log("Rendering patches: ", patches);
-
-        const rows = patches.map((patch) => {
-            return {
-                cells: [
-                    patch.name,
-                    patch.version,
-                    patch.category,
-                    patch.severity,
-                    patch.summary
-                ]
-            };
-        });
-
-        return (
-            <Table caption={ _("Available Updates") } cells={columns} rows={rows}>
-                <TableHeader />
-                <TableBody />
-            </Table>
-        );
+        return <Loading />;
     }
+
+    return (
+        <PatchesList patches={patches} />
+    );
 }
