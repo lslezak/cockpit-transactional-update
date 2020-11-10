@@ -39,6 +39,9 @@ export function Application() {
     }
 
     return (
-        <PatchesList patches={patches} />
+        <PatchesList
+            patches={patches}
+            onSubmit={ names => console.log(`Installing ${names}`) }
+        />
     );
 }
