@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=org.opensuse.transactional_update
+User=root
+Exec=@PATH@/tu-server.rb
