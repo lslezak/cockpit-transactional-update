@@ -4,6 +4,7 @@
 # https://www.freedesktop.org/software/PackageKit/gtk-doc/api-reference.html
 
 require "dbus"
+require "forwardable"
 require "optparse"
 require "rexml/document"
 require "securerandom"
@@ -17,16 +18,13 @@ Signal.trap("TERM") { puts "Aborted"; exit 1 }
 class Configuration
   include Singleton
 
-  attr_accessor :patches
-end
-
-OptionParser.new do |parser|
-  parser.banner = "Usage: #{$PROGRAM_NAME} [options]"
-
-  parser.on("-p", "--patches FILE", "Read the available patches from a XML file") do |f|
-    Configuration.instance.patches = f
+  class << self
+    extend Forwardable
+    def_delegators :instance, :patches, :patches=, :session_bus, :session_bus=
   end
-end.parse!
+
+  attr_accessor :patches, :session_bus
+end
 
 # read the available patches, call zypper or read a zypper dump from file
 class PatchReader
@@ -64,6 +62,25 @@ class PatchReader
   end
 end
 
+class PatchInstaller
+  # the selected patches
+  attr_reader :patches
+
+  def initialize(patches)
+    @patches = patches
+  end
+
+  def install
+    # FIXME: install just the selected patches,
+    # the current transactional-update script can only run
+    # full "zypper patch" installing everything...
+
+    puts "Installing patches..."
+    # TODO: Tumbleweed needs "transactional-update up" here...
+    system "transactional-update patch"
+  end
+end
+
 # Just for testing the parser
 # require "pp"
 # p = PatchReader.new("./data/patches.xml")
@@ -81,17 +98,21 @@ class Transaction < DBus::Object
     # TODO: add some filtering parameters like in PackageKit?
     dbus_method :GetUpdates do
       # read the updates, emit a signal for each update
-      reader = PatchReader.new(Configuration.instance.patches)
+      reader = PatchReader.new(Configuration.patches)
       # load the patches in a separate thread to not block the service
       Thread.new do
         reader.read do |p|
           # emit the signal for each patch
           Update(p)
         end
+        Done()
       end
     end
 
+    # report a patch
     dbus_signal :Update, "update:a{ss}"
+    # signal finished operation
+    dbus_signal :Done
   end
 end
 
@@ -108,19 +129,18 @@ class Root < DBus::Object
   end
 
   dbus_interface INTERFACE do
-    # FIXME: should be "out ret:o", but that crashes :-(
-    dbus_method :CreateTransaction, "out ret:s" do
+    dbus_method :CreateTransaction, "out ret:o" do
 
       transaction = Transaction.create
       service.export(transaction)
+      transactions << transaction
 
       puts "Created DBus object #{transaction.path}"
-      transaction.path
+      [ transaction.path ]
     end
 
-    # FIXME: this crashes, a bug in ruby-dbus?
     dbus_method :GetTransactionList, "out ret:ao" do
-      transactions.map(&:path)
+      [ transactions.map(&:path) ]
     end
   end
 end
@@ -133,7 +153,26 @@ class Service
   end
 end
 
-bus = DBus::SystemBus.instance
+OptionParser.new do |parser|
+  parser.banner = "Usage: #{$PROGRAM_NAME} [options]"
+
+  parser.on("-p", "--patches FILE", "Read the available patches from a XML file") do |f|
+    Configuration.patches = f
+  end
+
+  parser.on("-s", "--session-bus", "Use the session bus instead of the system bus") do |s|
+    Configuration.session_bus = s
+  end
+end.parse!
+
+if Configuration.session_bus
+  puts "Connecting to the session bus..."
+  bus = DBus::SessionBus.instance
+else
+  puts "Connecting to the system bus..."
+  bus = DBus::SystemBus.instance
+end
+
 service = Service.create(bus)
 
 root = Root.new(service)
