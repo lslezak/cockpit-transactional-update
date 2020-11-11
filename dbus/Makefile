@@ -4,7 +4,7 @@ SERVICE_FILE := "org.opensuse.transactional_update.service"
 CONFIG_FILE := "org.opensuse.transactional_update.conf"
 
 DBUS_SERVICE_DIR := "/usr/share/dbus-1/system-services"
-DBUS_CONF_DIF := "/etc/dbus-1/system.d/org.freedesktop.NetworkManager.conf"
+DBUS_CONF_DIF := "/etc/dbus-1/system.d"
 
 install:
 	@echo "Installing $(SERVICE_FILE)..."
