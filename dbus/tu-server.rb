@@ -105,14 +105,17 @@ class Transaction < DBus::Object
           # emit the signal for each patch
           Update(p)
         end
-        Done()
+        Finished()
+        # TODO: delete the transaction and unexport it from DBus after it is finished?
       end
     end
 
     # report a patch
     dbus_signal :Update, "update:a{ss}"
     # signal finished operation
-    dbus_signal :Done
+    dbus_signal :Finished
+    # signal an error during operation
+    dbus_signal :Error, "error:s"
   end
 end
 
