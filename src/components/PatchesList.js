@@ -105,7 +105,7 @@ export function PatchesList({ patches, onSubmit }) {
                         {_("Install Patches")}
                     </Button> }
                 </CardActions>
-                <CardTitle><h2>{_("Available Updates")}</h2></CardTitle>
+                <CardTitle>{_("Available Updates")}</CardTitle>
             </CardHeader>
             <CardBody>
                 <Table
