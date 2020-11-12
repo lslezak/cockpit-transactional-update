@@ -20,14 +20,12 @@
  */
 
 import React from 'react';
-import { Backdrop, Bullseye, Spinner } from '@patternfly/react-core';
+import { Bullseye, Spinner } from '@patternfly/react-core';
 
 export function Loading() {
     return (
-        <Backdrop>
-            <Bullseye>
-                <Spinner />
-            </Bullseye>
-        </Backdrop>
+        <Bullseye>
+            <Spinner />
+        </Bullseye>
     );
 }

@@ -18,10 +18,14 @@
  */
 
 import React, { useState, useEffect } from 'react';
-
+import { Page, PageSection, PageSectionVariants, Text } from '@patternfly/react-core';
 import { Patch } from './lib/patch';
 import { Loading } from './components/Loading';
 import { PatchesList } from './components/PatchesList';
+import cockpit from 'cockpit';
+
+const _ = cockpit.gettext;
+const n_ = cockpit.ngettext;
 
 export function Application() {
     const [loading, setLoading] = useState(true);
@@ -34,14 +38,37 @@ export function Application() {
         });
     }, []);
 
-    if (loading) {
-        return <Loading />;
-    }
+    const statusText = () => {
+        if (loading) {
+            return _('Loading available patches. Please, wait...');
+        } else {
+            return n_('1 patch found', `${patches.length} patches found`, patches.length);
+        }
+    };
+
+    const content = () => {
+        if (loading) {
+            return <Loading />;
+        }
+
+        return (
+            <PatchesList
+                patches={patches}
+                onSubmit={ names => console.log(`Installing ${names}`) }
+            />
+        );
+    };
 
     return (
-        <PatchesList
-            patches={patches}
-            onSubmit={ names => console.log(`Installing ${names}`) }
-        />
+        <Page>
+            <PageSection className="content-header-extra">
+                <div id="state" className="content-header-extra--state">
+                    {statusText()}
+                </div>
+            </PageSection>
+            <PageSection variant={PageSectionVariants.light}>
+                {content()}
+            </PageSection>
+        </Page>
     );
 }
