@@ -88,10 +88,10 @@ end
 # exit 0
 
 class Transaction < DBus::Object
-  INTERFACE = "org.opensuse.transactional_update"
+  INTERFACE = "org.opensuse.TransactionalUpdate"
 
   def self.create
-    new("/org/opensuse/transactional_update/" + SecureRandom.alphanumeric(16))
+    new("/org/opensuse/TransactionalUpdate/" + SecureRandom.alphanumeric(16))
   end
 
   dbus_interface INTERFACE do
@@ -120,8 +120,8 @@ class Transaction < DBus::Object
 end
 
 class Root < DBus::Object
-  INTERFACE = "org.opensuse.transactional_update"
-  PATH = "/org/opensuse/transactional_update"
+  INTERFACE = "org.opensuse.TransactionalUpdate"
+  PATH = "/org/opensuse/TransactionalUpdate"
 
   attr_reader :service, :transactions
 
@@ -149,7 +149,7 @@ class Root < DBus::Object
 end
 
 class Service
-  NAME = "org.opensuse.transactional_update"
+  NAME = "org.opensuse.TransactionalUpdate"
 
   def self.create(bus)
     bus.request_service(NAME)
