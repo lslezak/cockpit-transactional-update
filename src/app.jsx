@@ -18,10 +18,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Page, PageSection, PageSectionVariants, Text } from '@patternfly/react-core';
+import { Page, PageSection, PageSectionVariants } from '@patternfly/react-core';
 import { Patch } from './lib/patch';
 import { Loading } from './components/Loading';
 import { PatchesList } from './components/PatchesList';
+import { UpdatedSystemNotice } from './components/UpdatedSystemNotice';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -58,6 +59,10 @@ export function Application() {
             />
         );
     };
+
+    if (!loading && patches.length === 0) {
+        return <UpdatedSystemNotice />;
+    }
 
     return (
         <Page>
