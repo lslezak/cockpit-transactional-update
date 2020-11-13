@@ -23,33 +23,45 @@ import cockpit from 'cockpit';
 
 export class Patch {
     static async patches() {
-        const xml = await cockpit.spawn(["zypper", "--xmlout", "list-patches"], { superuser : "require" });
+        // the place for collecting the found patches
+        const patches = [];
 
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xml, "text/xml");
+        const dbusService = cockpit.dbus("org.opensuse.TransactionalUpdate");
+        const dbusProxy = dbusService.proxy("org.opensuse.TransactionalUpdate",
+                                            "/org/opensuse/TransactionalUpdate");
 
-        const updates = xmlDoc.getElementsByTagName("update");
+        const transaction = (await dbusProxy.call("CreateTransaction"))[0];
+        console.log("Created transaction: ", transaction);
 
-        return Array.from(updates).map((update) => {
-            return new Patch(
-                update.getAttribute("name"),
-                update.getAttribute("edition"),
-                update.getAttribute("category"),
-                update.getAttribute("severity"),
-                update.getElementsByTagName("summary")[0].textContent,
-                update.getElementsByTagName("description")[0].textContent
-            );
+        // register callbacks for the patch update details DBus signals,
+        // must be done before (!) calling the GetUpdates() DBus method
+        dbusService.subscribe({ interface: "org.opensuse.TransactionalUpdate", path: transaction, member: "Update" },
+                              (path, iface, signal, args) => {
+                                  console.debug("Received patch: ", args[0]);
+                                  // add patch to the list
+                                  patches.push(new Patch(args[0]));
+                              });
+
+        const promise = new Promise(resolve => {
+            dbusService.subscribe({ interface: "org.opensuse.TransactionalUpdate", path: transaction, member: "Finished" },
+                                  () => {
+                                      console.log("Patch reading finished, found", patches.length, "patches");
+                                      resolve(patches);
+                                  });
         });
+
+        const transactionProxy = dbusService.proxy("org.opensuse.TransactionalUpdate", transaction);
+        transactionProxy.call("GetUpdates");
+
+        return promise;
     }
 
-    constructor(name, version, category, severity, summary, description) {
+    constructor({ name, version, category, severity, summary, description }) {
         this.name = name;
         this.version = version;
         this.category = category;
         this.severity = severity;
         this.summary = summary;
         this.description = description;
-
-        console.debug("Created Patch object: ", this);
     }
 }
