@@ -17,26 +17,20 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
-import cockpit from 'cockpit';
 import React, { useState, useEffect } from 'react';
-import { Backdrop, Bullseye, Spinner } from '@patternfly/react-core';
-import { Table, TableHeader, TableBody } from '@patternfly/react-table';
-
+import { Page, PageSection, PageSectionVariants } from '@patternfly/react-core';
 import { Patch } from './lib/patch';
+import { Loading } from './components/Loading';
+import { PatchesList } from './components/PatchesList';
+import { UpdatedSystemNotice } from './components/UpdatedSystemNotice';
+import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
+const n_ = cockpit.ngettext;
 
 export function Application() {
     const [loading, setLoading] = useState(true);
     const [patches, setPatches] = useState([]);
-
-    const columns = [
-        "Name",
-        "Version",
-        "Category",
-        "Severity",
-        "Summary"
-    ];
 
     useEffect(() => {
         Patch.patches().then((patches) => {
@@ -45,34 +39,41 @@ export function Application() {
         });
     }, []);
 
-    if (loading) {
-        return (
-            <Backdrop>
-                <Bullseye>
-                    <Spinner />
-                </Bullseye>
-            </Backdrop>
-        );
-    } else {
-        console.log("Rendering patches: ", patches);
+    const statusText = () => {
+        if (loading) {
+            return _('Loading available patches. Please, wait...');
+        } else {
+            return n_('1 patch found', `${patches.length} patches found`, patches.length);
+        }
+    };
 
-        const rows = patches.map((patch) => {
-            return {
-                cells: [
-                    patch.name,
-                    patch.version,
-                    patch.category,
-                    patch.severity,
-                    patch.summary
-                ]
-            };
-        });
+    const content = () => {
+        if (loading) {
+            return <Loading />;
+        }
 
         return (
-            <Table caption={ _("Available Updates") } cells={columns} rows={rows}>
-                <TableHeader />
-                <TableBody />
-            </Table>
+            <PatchesList
+                patches={patches}
+                onSubmit={ names => console.log(`Installing ${names}`) }
+            />
         );
+    };
+
+    if (!loading && patches.length === 0) {
+        return <UpdatedSystemNotice />;
     }
+
+    return (
+        <Page>
+            <PageSection className="content-header-extra">
+                <div id="state" className="content-header-extra--state">
+                    {statusText()}
+                </div>
+            </PageSection>
+            <PageSection variant={PageSectionVariants.light}>
+                {content()}
+            </PageSection>
+        </Page>
+    );
 }
