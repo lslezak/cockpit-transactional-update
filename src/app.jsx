@@ -25,6 +25,7 @@ import {
     TabTitleText
 } from '@patternfly/react-core';
 import { PatchesTab } from './components/PatchesTab';
+import { SnapshotsTab } from './components/SnapshotsTab';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
@@ -38,9 +39,12 @@ export function Application() {
 
     return (
         <Page id="transactional-update">
-            <Tabs activeKey={activeKey} onSelect={handleTabClick}>
+            <Tabs mountOnEnter activeKey={activeKey} onSelect={handleTabClick}>
                 <Tab eventKey={0} title={<TabTitleText>{_("Patches")}</TabTitleText>}>
                     <PatchesTab />
+                </Tab>
+                <Tab eventKey={1} title={<TabTitleText>{_("Snapshots")}</TabTitleText>}>
+                    <SnapshotsTab />
                 </Tab>
             </Tabs>
         </Page>
