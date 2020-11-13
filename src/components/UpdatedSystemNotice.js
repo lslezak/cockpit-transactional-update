@@ -35,7 +35,7 @@ export function UpdatedSystemNotice() {
         <EmptyState>
             <EmptyStateIcon icon={CheckCircle} />
             <Title headingLevel="h4" size="lg">
-                Your System is Updated
+                {_('Your System is Updated')}
             </Title>
 
             <EmptyStateBody>
