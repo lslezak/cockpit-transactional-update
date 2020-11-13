@@ -17,63 +17,32 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState, useEffect } from 'react';
-import { Page, PageSection, PageSectionVariants } from '@patternfly/react-core';
-import { Patch } from './lib/patch';
-import { Loading } from './components/Loading';
-import { PatchesList } from './components/PatchesList';
-import { UpdatedSystemNotice } from './components/UpdatedSystemNotice';
+import React, { useState } from 'react';
+import {
+    Page,
+    Tabs,
+    Tab,
+    TabTitleText
+} from '@patternfly/react-core';
+import { PatchesTab } from './components/PatchesTab';
 import cockpit from 'cockpit';
 
 const _ = cockpit.gettext;
-const n_ = cockpit.ngettext;
 
 export function Application() {
-    const [loading, setLoading] = useState(true);
-    const [patches, setPatches] = useState([]);
+    const [activeKey, setActiveKey] = useState(0);
 
-    useEffect(() => {
-        Patch.patches().then((patches) => {
-            setPatches(patches);
-            setLoading(false);
-        });
-    }, []);
-
-    const statusText = () => {
-        if (loading) {
-            return _('Loading available patches. Please, wait...');
-        } else {
-            return n_('1 patch found', `${patches.length} patches found`, patches.length);
-        }
+    const handleTabClick = (event, tabIndex) => {
+        setActiveKey(tabIndex);
     };
-
-    const content = () => {
-        if (loading) {
-            return <Loading />;
-        }
-
-        return (
-            <PatchesList
-                patches={patches}
-                onSubmit={ names => console.log(`Installing ${names}`) }
-            />
-        );
-    };
-
-    if (!loading && patches.length === 0) {
-        return <UpdatedSystemNotice />;
-    }
 
     return (
-        <Page>
-            <PageSection className="content-header-extra">
-                <div id="state" className="content-header-extra--state">
-                    {statusText()}
-                </div>
-            </PageSection>
-            <PageSection variant={PageSectionVariants.light}>
-                {content()}
-            </PageSection>
+        <Page id="transactional-update">
+            <Tabs activeKey={activeKey} onSelect={handleTabClick}>
+                <Tab eventKey={0} title={<TabTitleText>{_("Patches")}</TabTitleText>}>
+                    <PatchesTab />
+                </Tab>
+            </Tabs>
         </Page>
     );
 }
