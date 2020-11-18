@@ -27,6 +27,8 @@ configuration (but still needs running as `root` to refresh the repositories):
 
 ## Testing Data
 
+### Patches
+
 The [data/patches.xml](data/patches.xml) file contains an example with available
 patches. (With many applicable patches from an SLE15-SP1 system.)
 
@@ -36,7 +38,7 @@ You can use it with the `--patch` option:
 ./tu-update.rb --patch data/patches.xml
 ```
 
-To get testing data from your system just this command:
+To get testing data from your system just run this command:
 
 ```
 LC_ALL=C zypper --xmlout list-patches | sed 's/\(source url=".*\)?[^"]*/\1/' > patches.xml
@@ -44,11 +46,25 @@ LC_ALL=C zypper --xmlout list-patches | sed 's/\(source url=".*\)?[^"]*/\1/' > p
 
 *(Note: The 'sed' filtering removes the "secret" tokens from the SCC repository URLs.)*
 
+### Snapshots
+
+The [data/snapshots.json](data/snapshots.json) file contains snapper data.
+
+```
+./tu-update.rb --snapshots data/snapshots.json
+```
+
+To get testing data from your system run this command:
+
+```
+snapper --jsonout list > snapshots.json
+```
+
+
 ## TODO
 
 - Patch installation
 - Check pending snapshots
-- List old snapshots
 - Rollback
 
 ## DBus API Description
