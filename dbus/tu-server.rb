@@ -1,10 +1,14 @@
 #!/usr/bin/env ruby
 
+# This is a proof of concept for Dbus service implementing transactional
+# update backend.
+
 # inspired by the PackageKit DBus API
 # https://www.freedesktop.org/software/PackageKit/gtk-doc/api-reference.html
 
 require "dbus"
 require "forwardable"
+require "json"
 require "optparse"
 require "rexml/document"
 require "securerandom"
@@ -20,10 +24,11 @@ class Configuration
 
   class << self
     extend Forwardable
-    def_delegators :instance, :patches, :patches=, :session_bus, :session_bus=
+    def_delegators :instance, :patches, :patches=, :session_bus, :session_bus=,
+      :snapshots, :snapshots=
   end
 
-  attr_accessor :patches, :session_bus
+  attr_accessor :patches, :session_bus, :snapshots
 end
 
 # read the available patches, call zypper or read a zypper dump from file
@@ -45,6 +50,8 @@ class PatchReader
       puts "Done"
     end
 
+    # in theory we could use a streaming parser to process the output on the fly,
+    # but to make it simple in this PoC just build the whole XML document tree in memory
     doc = REXML::Document.new(xml)
     doc.elements.each("//update") do |update|
       patch = {
@@ -58,6 +65,39 @@ class PatchReader
       }
 
       yield patch
+    end
+  end
+end
+
+# read the list of snapshots from snapper
+class SnapshotReader
+  attr_reader :path
+
+  def initialize(path = nil)
+    @path = path
+  end
+
+  # parse the snapper JSON snapper output and call the passed block for each snapshot
+  def read(&block)
+    if path
+      puts "Reading snapshots from #{path}"
+      json = File.read(path)
+    else
+      puts "Reading snapshots from the system (\"snapper list\")..."
+      json = `snapper --jsonout list`
+      puts "Done"
+    end
+
+    # just the "root" configuration?
+    snapshots = JSON.parse(json)["root"]
+
+    if snapshots.is_a?(Array)
+      puts "Found #{snapshots.size} snapshots"
+      snapshots.each do |snapshot|
+        # DBus cannot send nils, just remove the nil pairs
+        snapshot.delete_if { |_k, v| v.nil? }
+        yield snapshot
+      end
     end
   end
 end
@@ -110,8 +150,24 @@ class Transaction < DBus::Object
       end
     end
 
+    dbus_method :GetSnapshots do
+      # read the updates, emit a signal for each update
+      reader = SnapshotReader.new(Configuration.snapshots)
+      # load the snapshots in a separate thread to not block the service
+      Thread.new do
+        reader.read do |s|
+          # emit the signal for each snapshot
+          Snapshot(s)
+        end
+        Finished()
+        # TODO: delete the transaction and unexport it from DBus after it is finished?
+      end
+    end
+
     # report a patch
     dbus_signal :Update, "update:a{ss}"
+    # report a snapshot
+    dbus_signal :Snapshot, "snapshot:a{sv}"
     # signal finished operation
     dbus_signal :Finished
     # signal an error during operation
@@ -161,6 +217,10 @@ OptionParser.new do |parser|
 
   parser.on("-p", "--patches FILE", "Read the available patches from a XML file") do |f|
     Configuration.patches = f
+  end
+
+  parser.on("-n", "--snapshots FILE", "Read the snapshots a JSON file") do |f|
+    Configuration.snapshots = f
   end
 
   parser.on("-s", "--session-bus", "Use the session bus instead of the system bus") do |s|

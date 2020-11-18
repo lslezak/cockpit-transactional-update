@@ -1,0 +1,62 @@
+{
+  "root": [
+    {
+      "subvolume": "/",
+      "number": 0,
+      "default": false,
+      "active": false,
+      "type": "single",
+      "pre-number": null,
+      "date": "",
+      "user": "root",
+      "used-space": null,
+      "cleanup": "",
+      "description": "current",
+      "userdata": null
+    },
+    {
+      "subvolume": "/",
+      "number": 1,
+      "default": false,
+      "active": false,
+      "type": "single",
+      "pre-number": null,
+      "date": "2020-10-19 17:21:41",
+      "user": "root",
+      "used-space": 131072,
+      "cleanup": "",
+      "description": "first root filesystem",
+      "userdata": null
+    },
+    {
+      "subvolume": "/",
+      "number": 2,
+      "default": false,
+      "active": false,
+      "type": "single",
+      "pre-number": null,
+      "date": "2020-10-19 17:25:18",
+      "user": "root",
+      "used-space": 131072,
+      "cleanup": "number",
+      "description": "after installation",
+      "userdata": {
+        "important": "yes"
+      }
+    },
+    {
+      "subvolume": "/",
+      "number": 3,
+      "default": true,
+      "active": true,
+      "type": "single",
+      "pre-number": null,
+      "date": "2020-11-11 09:42:51",
+      "user": "root",
+      "used-space": 707620864,
+      "cleanup": "",
+      "description": "Snapshot Update of #1",
+      "userdata": null
+    }
+  ]
+}
