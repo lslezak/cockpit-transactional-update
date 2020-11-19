@@ -19,40 +19,36 @@
  * find current contact information at www.suse.com.
  */
 
-import cockpit from 'cockpit';
+import { UpdateService } from "./update_service";
 
+// represent a patch received from the transactional update DBus service
 export class Patch {
     static async patches() {
         // the place for collecting the found patches
         const patches = [];
-
-        const dbusService = cockpit.dbus("org.opensuse.TransactionalUpdate");
-        const dbusProxy = dbusService.proxy("org.opensuse.TransactionalUpdate",
-                                            "/org/opensuse/TransactionalUpdate");
-
-        const transaction = (await dbusProxy.call("CreateTransaction"))[0];
-        console.log("Created transaction: ", transaction);
+        const service = new UpdateService();
+        const transaction = await service.transaction();
 
         // register callbacks for the patch update details DBus signals,
         // must be done before (!) calling the GetUpdates() DBus method
-        dbusService.subscribe({ interface: "org.opensuse.TransactionalUpdate", path: transaction, member: "Update" },
-                              (path, iface, signal, args) => {
-                                  console.debug("Received patch: ", args[0]);
-                                  // add patch to the list
-                                  patches.push(new Patch(args[0]));
-                              });
+        transaction.watchSignal(
+            "Update",
+            (args) => {
+                console.debug("Received patch: ", args[0]);
+                // add patch to the list
+                patches.push(new Patch(args[0]));
+            });
 
         const promise = new Promise(resolve => {
-            dbusService.subscribe({ interface: "org.opensuse.TransactionalUpdate", path: transaction, member: "Finished" },
-                                  () => {
-                                      console.log("Patch reading finished, found", patches.length, "patches");
-                                      resolve(patches);
-                                  });
+            transaction.watchSignal(
+                "Finished",
+                () => {
+                    console.log("Patch reading finished, found", patches.length, "patches");
+                    resolve(patches);
+                });
         });
 
-        const transactionProxy = dbusService.proxy("org.opensuse.TransactionalUpdate", transaction);
-        transactionProxy.call("GetUpdates");
-
+        transaction.call("GetUpdates");
         return promise;
     }
 
