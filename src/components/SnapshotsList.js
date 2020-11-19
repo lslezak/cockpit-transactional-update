@@ -27,19 +27,23 @@ import {
     TableBody
 } from '@patternfly/react-table';
 import cockpit from 'cockpit';
+import prettyBytes from 'pretty-bytes';
 
 const _ = cockpit.gettext;
 
 const buildRows = (snapshotsList) => (
     snapshotsList.map((snapshot) => (
         {
-            rowKey: snapshot.id,
+            rowKey: snapshot.number,
             cells: [
-                snapshot.id,
-                snapshot.date.toLocaleString()
+                snapshot.number,
+                snapshot.type,
+                snapshot.date,
+                snapshot.usedSpace ? prettyBytes(snapshot.usedSpace, { locale: true, binary: true }) : "",
+                snapshot.description
             ],
             active: snapshot.active,
-            current: snapshot.current
+            current: snapshot.default
         }
     ))
 );
@@ -48,7 +52,7 @@ export function SnapshotsList({ snapshots, onRebootRequest, onRollbackRequest })
     const [rows] = useState(buildRows(snapshots));
 
     const columns = [
-        _("Number"), _("Date")
+        _("Number"), _("Type"), _("Date"), _("Size"), _("Description")
     ];
 
     const actionResolver = ({ id, active, current }) => {

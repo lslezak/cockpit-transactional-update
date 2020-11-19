@@ -19,11 +19,12 @@
  * find current contact information at www.suse.com.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     PageSection,
     PageSectionVariants
 } from '@patternfly/react-core';
+import { Snapshot } from '../lib/snapshot';
 import { Loading } from './Loading';
 import { SnapshotsList } from './SnapshotsList';
 import cockpit from 'cockpit';
@@ -31,18 +32,16 @@ import cockpit from 'cockpit';
 const _ = cockpit.gettext;
 const n_ = cockpit.ngettext;
 
-/**
- * Dummy data. Just replace with data from the D-Bus service.
- */
-const dummySnapshots = [
-    { id: 2, date: new Date('2020-11-16 10:02') },
-    { id: 1, date: new Date('2020-11-15 14:30'), current: true },
-    { id: 0, date: new Date('2020-11-10 12:00'), active: true }
-];
-
 export function SnapshotsTab() {
-    const [loading] = useState(false);
-    const [snapshots] = useState(dummySnapshots);
+    const [loading, setLoading] = useState(true);
+    const [snapshots, setSnapshots] = useState([]);
+
+    useEffect(() => {
+        Snapshot.snapshots().then((snapshots) => {
+            setSnapshots(snapshots);
+            setLoading(false);
+        });
+    }, []);
 
     const statusText = () => {
         if (loading) {
