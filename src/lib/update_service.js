@@ -23,9 +23,9 @@ import cockpit from 'cockpit';
 
 // wrapper for a transaction object inside the org.opensuse.TransactionalUpdate
 // DBus service
+// see https://cockpit-project.org/guide/latest/cockpit-dbus.html
 class UpdateTransaction {
     constructor(dbusService, objectPath) {
-        this.path = objectPath;
         this.service = dbusService;
         this.proxy = dbusService.proxyFor(objectPath);
     }
@@ -42,7 +42,7 @@ class UpdateTransaction {
         console.log("Watching signal", name);
         const signal = {
             interface: "org.opensuse.TransactionalUpdate",
-            path: this.path,
+            path: this.proxy.path,
             member: name
         };
 
