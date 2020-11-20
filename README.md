@@ -24,6 +24,39 @@ cd cockpit-transactional-update
 make
 ```
 
+# The DBus Service
+
+This module requires a special DBus service as a background for executing the
+real transactional actions.
+
+So far there is no such a service for that. But there is a testing service
+in the `dbus/` subdirectory serving as a PoC example.
+
+## Installation
+
+```
+cd dbus
+sudo make install
+```
+
+This will install the DBus configuration files so the application is allowed
+to connect to the system bus.
+
+## Running the service
+
+The DBus can start the service automatically in background, but it is
+recommended to start it manually to see the debugging output and use some
+testing data.
+
+```
+cd dbus
+sudo ./tu-server.rb --patch data/patches.xml
+```
+
+This wil read the patches from a `zypper` dump instead of really calling
+`zyppper`.
+
+
 # Installing
 
 `make install` compiles and installs the package in `/usr/share/cockpit/`. The

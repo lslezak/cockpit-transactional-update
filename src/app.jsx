@@ -17,66 +17,36 @@
  * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
  */
 
+import React, { useState } from 'react';
+import {
+    Page,
+    Tabs,
+    Tab,
+    TabTitleText
+} from '@patternfly/react-core';
+import { PatchesTab } from './components/PatchesTab';
+import { SnapshotsTab } from './components/SnapshotsTab';
 import cockpit from 'cockpit';
-import React from 'react';
-import { Backdrop, Bullseye, Spinner } from '@patternfly/react-core';
-import { Table, TableHeader, TableBody } from '@patternfly/react-table';
-
-import { Patch } from './patch.jsx';
 
 const _ = cockpit.gettext;
 
-export class Application extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            loading: true,
-            columns: [
-                "Name",
-                "Version",
-                "Category",
-                "Severity",
-                "Summary"
-            ]
-        };
-    }
+export function Application() {
+    const [activeKey, setActiveKey] = useState(0);
 
-    componentDidMount() {
-        Patch.patches().then((patches) =>
-            this.setState({ patches: patches, loading: false })
-        );
-    }
+    const handleTabClick = (event, tabIndex) => {
+        setActiveKey(tabIndex);
+    };
 
-    render() {
-        if (this.state.loading)
-            return (
-                <Backdrop>
-                    <Bullseye>
-                        <Spinner />
-                    </Bullseye>
-                </Backdrop>
-            );
-        else {
-            console.log("Rendering patches: ", this.state.patches);
-
-            const rows = this.state.patches.map((patch) => {
-                return {
-                    cells: [
-                        patch.name,
-                        patch.version,
-                        patch.category,
-                        patch.severity,
-                        patch.summary
-                    ]
-                };
-            });
-
-            return (
-                <Table caption={ _("Available Updates") } cells={this.state.columns} rows={rows}>
-                    <TableHeader />
-                    <TableBody />
-                </Table>
-            );
-        }
-    }
+    return (
+        <Page id="transactional-update">
+            <Tabs mountOnEnter activeKey={activeKey} onSelect={handleTabClick}>
+                <Tab eventKey={0} title={<TabTitleText>{_("Patches")}</TabTitleText>}>
+                    <PatchesTab />
+                </Tab>
+                <Tab eventKey={1} title={<TabTitleText>{_("Snapshots")}</TabTitleText>}>
+                    <SnapshotsTab />
+                </Tab>
+            </Tabs>
+        </Page>
+    );
 }
