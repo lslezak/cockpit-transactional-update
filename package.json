@@ -51,7 +51,7 @@
     "@patternfly/patternfly": "4.65.6",
     "@patternfly/react-core": "4.79.2",
     "@patternfly/react-table": "4.19.24",
-    "core-js": "3.7.0",
+    "core-js": "3.8.0",
     "pretty-bytes": "^5.4.1",
     "react": "16.14.0",
     "react-dom": "16.14.0"
