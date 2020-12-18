@@ -50,7 +50,7 @@
   "dependencies": {
     "@patternfly/patternfly": "4.65.6",
     "@patternfly/react-core": "4.79.2",
-    "@patternfly/react-table": "4.19.24",
+    "@patternfly/react-table": "4.19.45",
     "core-js": "3.7.0",
     "pretty-bytes": "^5.4.1",
     "react": "16.14.0",
